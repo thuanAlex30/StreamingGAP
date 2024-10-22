@@ -16,9 +16,8 @@ public class MusicGame {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
     private Integer score;
-
+    
     @Column(length = 20)
     private String game_type;
 

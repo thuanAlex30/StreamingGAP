@@ -18,8 +18,6 @@ public class MusicGameController {
 
     @Autowired
     private MusicGameService musicGameService;
-
-    // Get all music games
     @GetMapping
     public ReqRes getAllMusicGames() {
         ReqRes response = new ReqRes();
@@ -34,8 +32,6 @@ public class MusicGameController {
         }
         return response;
     }
-
-    // Get a music game by ID
     @GetMapping("/{id}")
     public ReqRes getMusicGameById(@PathVariable Integer id) {
         ReqRes response = new ReqRes();
@@ -51,8 +47,6 @@ public class MusicGameController {
         }
         return response;
     }
-
-    // Create a new music game
     @PostMapping
     public ReqRes createMusicGame(@RequestBody MusicGame musicGame) {
         ReqRes response = new ReqRes();
