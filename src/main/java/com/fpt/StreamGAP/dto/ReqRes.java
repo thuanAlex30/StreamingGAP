@@ -50,6 +50,7 @@ public class ReqRes {
     private List<ChatMessageDTO> chatMessageList;
     private List<ArtistDTO> artistList;
     private List<SongListenStatsDTO> songListenStatsList;
+    private List<MessageDTO> messages;
 
     @Getter
     private Song song;

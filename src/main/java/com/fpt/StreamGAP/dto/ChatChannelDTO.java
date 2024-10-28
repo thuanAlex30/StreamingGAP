@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -13,7 +14,8 @@ import java.util.Date;
 public class ChatChannelDTO {
     private Integer channel_id;
     private String channel_name;
-
+    private List<String> participants; // Danh sách người tham gia
+    private List<MessageDTO> messages;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date created_at;
 }

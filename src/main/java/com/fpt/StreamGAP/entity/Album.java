@@ -11,7 +11,11 @@ public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer album_id;
+    @Column(name = "album_id", nullable = false)
+    private Integer albumId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
     private Artist artist;

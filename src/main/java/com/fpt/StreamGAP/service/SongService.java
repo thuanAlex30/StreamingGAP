@@ -132,7 +132,7 @@ public class SongService {
                 existingSong.setLyrics(songDetails.getLyrics());
             }
             if (songDetails.getAlbum() != null) {
-                Album album = albumRepository.findById(songDetails.getAlbum().getAlbum_id())
+                Album album = albumRepository.findById(songDetails.getAlbum().getAlbumId())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Album not found"));
                 existingSong.setAlbum(album);
             }

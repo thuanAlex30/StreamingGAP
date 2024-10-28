@@ -79,11 +79,11 @@ public class PlaylistService {
             }
         } else {
             if (playlist.getUser() == null || !playlist.getUser().getUser_id().equals(currentUser.getUser_id())) {
-                playlist.setUser(currentUser);
-            } else {
                 throw new IllegalStateException("You can only edit your own playlist.");
             }
+            playlist.setUser(currentUser);
         }
+
         return playlistRepository.save(playlist);
     }
 
