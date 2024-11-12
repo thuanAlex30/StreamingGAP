@@ -34,11 +34,6 @@ public class MusicGameImporter {
                 musicGameDTO.setAnswer_3(row.getCell(3).getStringCellValue());
                 musicGameDTO.setAnswer_4(row.getCell(4).getStringCellValue());
                 musicGameDTO.setCorrect_answer((int) row.getCell(5).getNumericCellValue());
-
-                if (row.getCell(6).getCellType() == CellType.NUMERIC) {
-                    musicGameDTO.setUser_answer((int) row.getCell(6).getNumericCellValue());
-                }
-
                 musicGameDTOList.add(musicGameDTO);
             }
 

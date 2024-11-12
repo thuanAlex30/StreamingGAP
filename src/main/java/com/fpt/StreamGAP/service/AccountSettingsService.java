@@ -40,7 +40,6 @@ public class AccountSettingsService {
         });
     }
 
-
     public void deleteAccountSettings(Integer account_settings_id) {
         accountSettingsRepository.deleteById(account_settings_id);
     }

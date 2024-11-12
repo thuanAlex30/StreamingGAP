@@ -17,7 +17,4 @@ public class PlaylistDTO {
     private String title;
     private Date created_at;
     private Integer user_id;
-
-
-
 }

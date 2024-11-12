@@ -25,9 +25,12 @@ public class PlaylistSong {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User createdBy;
+
+
     public Date getAdded_at() {
         return added_at;
     }
+
     public void setAdded_at(Date added_at) {
         this.added_at = added_at;
     }

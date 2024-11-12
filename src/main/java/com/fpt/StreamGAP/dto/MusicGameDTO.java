@@ -6,48 +6,21 @@ import java.util.Date;
 
 @Data
 public class MusicGameDTO {
-    private Integer gameId;
-    private String username;
-    private Integer score;
 
-    public String getGame_type() {
-        return game_type;
-    }
-
-    public void setGame_type(String game_type) {
-        this.game_type = game_type;
-    }
-
-    private String game_type;
+    private Long id;
     private String Question_text;
     private Integer correct_answer;
-    private Integer user_answer;
     private String Answer_1;
     private String Answer_2;
+    private String Answer_3;
+    private String Answer_4;
 
-    public Integer getGameId() {
-        return gameId;
+    public Long getId() {
+        return id;
     }
 
-    public void setGameId(Integer gameId) {
-        this.gameId = gameId;
-    }
-
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public Integer getScore() {
-        return score;
-    }
-
-    public void setScore(Integer score) {
-        this.score = score;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getQuestion_text() {
@@ -64,14 +37,6 @@ public class MusicGameDTO {
 
     public void setCorrect_answer(Integer correct_answer) {
         this.correct_answer = correct_answer;
-    }
-
-    public Integer getUser_answer() {
-        return user_answer;
-    }
-
-    public void setUser_answer(Integer user_answer) {
-        this.user_answer = user_answer;
     }
 
     public String getAnswer_1() {
@@ -108,15 +73,4 @@ public class MusicGameDTO {
 
 
 
-    public Date getPlayedAt() {
-        return playedAt;
-    }
-
-    public void setPlayedAt(Date playedAt) {
-        this.playedAt = playedAt;
-    }
-
-    private String Answer_3;
-    private String Answer_4;
-    private Date playedAt;
 }

@@ -8,7 +8,4 @@ import java.util.List;
 
 @Repository
 public interface MusicGameRepository extends JpaRepository<MusicGame, Integer> {
-    List<MusicGame> findByCreatedByUsername(String username);
-    List<MusicGame> findByGameIdAndCreatedByUsername(Integer gameId, String username);
-
 }

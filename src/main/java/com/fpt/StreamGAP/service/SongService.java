@@ -1,5 +1,7 @@
 package com.fpt.StreamGAP.service;
 
+import com.fpt.StreamGAP.dto.SongDetailDTO;
+import com.fpt.StreamGAP.dto.SongTitleDTO;
 import com.fpt.StreamGAP.entity.*;
 
 import com.fpt.StreamGAP.repository.AlbumRepository;
@@ -20,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SongService {
@@ -161,5 +164,38 @@ public class SongService {
             throw new RuntimeException("Error deleting song: " + e.getMessage(), e);
         }
     }
-
+    public List<SongTitleDTO> searchSongs(String keyword) {
+        try {
+            if (keyword == null || keyword.trim().isEmpty()) {
+                return List.of();
+            }
+            List<Song> songs = songRepository.findByTitleContainingIgnoreCaseOrGenreContainingIgnoreCase(keyword);
+            // Map Song objects to SongTitleDTO
+            return songs.stream()
+                    .map(song -> new SongTitleDTO(song.getTitle()))
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException("Error searching songs: " + e.getMessage(), e);
+        }
+    }
+    public Song findById(int songId) {
+        return songRepository.findById(songId).orElse(null); // Tìm bài hát theo ID
+    }
+    private SongDetailDTO convertToSongDetailDTO(Song song) {
+        SongDetailDTO dto = new SongDetailDTO();
+        dto.setSongId(song.getSongId());
+        dto.setTitle(song.getTitle());
+        dto.setGenre(song.getGenre());
+        dto.setDuration(song.getDuration());
+        dto.setAudioFileUrl(song.getAudio_file_url());
+        dto.setLyrics(song.getLyrics());
+        return dto;
+    }
+    public SongDetailDTO getSongDetail(int songId) {
+        Song song = findById(songId);
+        if (song == null) {
+            return null; // Hoặc ném ngoại lệ nếu cần
+        }
+        return convertToSongDetailDTO(song);
+    }
 }

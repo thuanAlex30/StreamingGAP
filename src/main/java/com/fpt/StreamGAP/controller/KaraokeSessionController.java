@@ -2,8 +2,6 @@ package com.fpt.StreamGAP.controller;
 
 import com.fpt.StreamGAP.dto.KaraokeSessionDTO;
 import com.fpt.StreamGAP.dto.ReqRes;
-import com.fpt.StreamGAP.entity.Song;
-import com.fpt.StreamGAP.entity.User;
 import com.fpt.StreamGAP.service.KaraokeSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,27 +32,14 @@ public class KaraokeSessionController {
 
     @PostMapping
     public ResponseEntity<ReqRes> createKaraokeSession(@RequestBody KaraokeSessionDTO karaokeSessionDTO) {
-        // Kiểm tra xem người dùng có tồn tại không
-        Optional<User> optionalUser = Optional.ofNullable(karaokeSessionService.getUserById(karaokeSessionDTO.getUserId()));
-        if (optionalUser.isEmpty()) {
-            ReqRes response = new ReqRes();
-            response.setStatusCode(HttpStatus.NOT_FOUND.value());
-            response.setMessage("User not found.");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        KaraokeSessionDTO createdSession = karaokeSessionService.createKaraokeSession(karaokeSessionDTO);
 
-        // Kiểm tra xem bài hát có tồn tại không
-        Optional<Song> optionalSong = Optional.ofNullable(karaokeSessionService.getSongById(karaokeSessionDTO.getSongId()));
-        if (optionalSong.isEmpty()) {
+        if (createdSession == null) {
             ReqRes response = new ReqRes();
             response.setStatusCode(HttpStatus.NOT_FOUND.value());
             response.setMessage("Song not found.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
-
-        // Tạo session karaoke sau khi xác nhận user và song tồn tại
-        KaraokeSessionDTO createdSession = karaokeSessionService.createKaraokeSession(
-                karaokeSessionDTO, optionalUser.get(), optionalSong.get());
 
         ReqRes response = new ReqRes();
         response.setStatusCode(HttpStatus.CREATED.value());
@@ -64,28 +49,39 @@ public class KaraokeSessionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PutMapping("/{sessionId}")
+    public ResponseEntity<ReqRes> updateKaraokeSession(@PathVariable Integer sessionId, @RequestBody KaraokeSessionDTO karaokeSessionDTO) {
+        KaraokeSessionDTO updatedSession = karaokeSessionService.updateKaraokeSession(sessionId, karaokeSessionDTO);
+
+        ReqRes response = new ReqRes();
+        if (updatedSession == null) {
+            response.setStatusCode(HttpStatus.FORBIDDEN.value());
+            response.setMessage("You do not own this karaoke session or session not found.");
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+
+        response.setStatusCode(HttpStatus.OK.value());
+        response.setMessage("Karaoke session updated successfully.");
+        response.setKaraokeSessionList(List.of(updatedSession));
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @DeleteMapping("/{sessionId}")
     public ResponseEntity<ReqRes> deleteKaraokeSession(@PathVariable Integer sessionId) {
-        Optional<KaraokeSessionDTO> sessionOptional = karaokeSessionService.getKaraokeSessionById(sessionId);
+        boolean isDeleted = karaokeSessionService.deleteKaraokeSession(sessionId);
 
         ReqRes response = new ReqRes();
-        if (sessionOptional.isPresent()) {
-            karaokeSessionService.deleteKaraokeSession(sessionId);
-
-            response.setStatusCode(HttpStatus.OK.value());
-            response.setMessage("Karaoke session deleted successfully.");
-            response.setKaraokeSessionList(List.of(sessionOptional.get()));
-
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            response.setStatusCode(HttpStatus.NOT_FOUND.value());
-            response.setMessage("Karaoke session not found.");
-
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        if (!isDeleted) {
+            response.setStatusCode(HttpStatus.FORBIDDEN.value());
+            response.setMessage("You do not own this karaoke session or session not found.");
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
-    }
 
+        response.setStatusCode(HttpStatus.OK.value());
+        response.setMessage("Karaoke session deleted successfully.");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @GetMapping("/{sessionId}")
     public ResponseEntity<ReqRes> getKaraokeSessionById(@PathVariable Integer sessionId) {
@@ -99,7 +95,7 @@ public class KaraokeSessionController {
             return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
             response.setStatusCode(HttpStatus.NOT_FOUND.value());
-            response.setMessage("Karaoke session not found.");
+            response.setMessage("Karaoke session not found or you do not own this session.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }

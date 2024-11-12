@@ -7,6 +7,7 @@ import com.fpt.StreamGAP.repository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -210,8 +211,16 @@ public class UserManagementService {
     public Optional<Integer> getUsersById(Integer id) {
         return userRepo.findById(id).map(User::getUser_id);
     }
+
     public Optional<User> getUserByUsername(String username) {
         return userRepo.findByUsername(username);
+    }
+    public User findByUsernameOrThrow(String username) {
+        // Tìm kiếm user bằng username
+        Optional<User> user = userRepo.findByUsername(username);
+
+        // Kiểm tra nếu user tồn tại, nếu không thì ném ra một ngoại lệ
+        return user.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
 
 }
