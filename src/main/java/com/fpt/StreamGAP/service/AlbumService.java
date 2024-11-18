@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +25,13 @@ public class AlbumService {
     @Autowired
     private UserRepo userRepo;
 
+    @Autowired
+    private ArtistRepository artistRepository;
 
-    private String getCurrentUsername() {
+    public List<Album> getAllAlbum() {
+        return albumRepository.findAll();
+    }
+    public String getCurrentUsername() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             return ((UserDetails) principal).getUsername();
@@ -64,27 +70,51 @@ public class AlbumService {
         String currentUsername = getCurrentUsername();
         User currentUser = userRepo.findByUsername(currentUsername)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Optional<Album> existingAlbumOpt = albumRepository.findByTitleAndUser(album.getTitle(), currentUser);
-        if (existingAlbumOpt.isPresent()) {
-            Album existingAlbum = existingAlbumOpt.get();
-            if (album.getAlbumId() == null || !existingAlbum.getAlbumId().equals(album.getAlbumId())) {
-                throw new IllegalStateException("A album with the same title already exists for this user.");
-            }
+        if (album.getUser() == null) {
+            album.setUser(currentUser);
+        } else if (!album.getUser().getUser_id().equals(currentUser.getUser_id())) {
+            throw new IllegalStateException("You can only edit your own album.");
         }
-        if (isAdmin()) {
-            Optional<Album> adminExistingAlbumOpt = albumRepository.findByTitleAndUser(album.getTitle(), album.getUser());
-            if (adminExistingAlbumOpt.isPresent() && !adminExistingAlbumOpt.get().getAlbumId().equals(album.getAlbumId())) {
-                throw new IllegalStateException("A playlist with the same title already exists for this user.");
-            }
-        } else {
-            if (album.getUser() == null || !album.getUser().getUser_id().equals(currentUser.getUser_id())) {
-                album.setUser(currentUser);
+        if (album.getArtist() != null) {
+            Artist artist = album.getArtist();
+            if (artist.getArtist_id() != null) {
+                Optional<Artist> artistOpt = artistRepository.findById(artist.getArtist_id());
+                Artist foundArtist = artistOpt.orElseThrow(() -> new RuntimeException("Artist with id " + artist.getArtist_id() + " not found"));
+                if (artist.getName() != null) foundArtist.setName(artist.getName());
+                if (artist.getBio() != null) foundArtist.setBio(artist.getBio());
+                if (artist.getProfile_image_url() != null) foundArtist.setProfile_image_url(artist.getProfile_image_url());
+                if (artist.getCreated_at() != null) foundArtist.setCreated_at(artist.getCreated_at());
+
+                album.setArtist(foundArtist);
             } else {
-                throw new IllegalStateException("You can only edit your own playlist.");
+                throw new IllegalStateException("Artist information is required. You must provide an artist_id or a complete artist object.");
             }
         }
-        return albumRepository.save(album);
+        if (album.getAlbumId() == null) {
+            return albumRepository.save(album);
+        } else {
+            Optional<Album> existingAlbumOpt = albumRepository.findById(album.getAlbumId());
+            if (existingAlbumOpt.isPresent()) {
+                Album existingAlbum = existingAlbumOpt.get();
+                if (album.getTitle() != null) {
+                    existingAlbum.setTitle(album.getTitle());
+                }
+                if (album.getRelease_date() != null) {
+                    existingAlbum.setRelease_date(album.getRelease_date());
+                }
+                if (album.getCover_image_url() != null) {
+                    existingAlbum.setCover_image_url(album.getCover_image_url());
+                }
+                if (album.getCreated_at() != null) {
+                    existingAlbum.setCreated_at(album.getCreated_at());
+                }
+                return albumRepository.save(existingAlbum);
+            } else {
+                throw new RuntimeException("Album not found with id " + album.getAlbumId());
+            }
+        }
     }
+
 
 
     public void deleteAlbumsForCurrentUser(Integer id) {
@@ -96,5 +126,5 @@ public class AlbumService {
             partyMode.ifPresent(albumRepository::delete);
         }
     }
-}
 
+}

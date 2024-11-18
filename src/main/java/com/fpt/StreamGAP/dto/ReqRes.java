@@ -48,11 +48,12 @@ public class ReqRes {
     private List<PlaylistDTO> playList;
     private List<ArtistDTO> artistList;
     private List<SongListenStatsDTO> songListenStatsList;
-    private List<MessageDTO> messages;//
+    private List<MessageDTO> messages;
 
     @Getter
     private Song song;
 
+    // Setters for other fields
     public void setPlaylistSongList(List<FavoriteSongDTO.PlaylistSongDTO> playlistSongList) {
         this.playlistSongList = playlistSongList;
     }
@@ -69,8 +70,8 @@ public class ReqRes {
         this.favoriteSongList = favoriteSongList;
     }
 
+    // Correctly defined setter for songDtoList
     public void setSongDtoList(List<SongDTO> songDtoList) {
         this.songDtoList = songDtoList;
     }
-
 }
