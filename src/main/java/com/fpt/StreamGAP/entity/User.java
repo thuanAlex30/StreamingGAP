@@ -24,12 +24,15 @@ public class User implements UserDetails {
     private String email;
     private String password;
     private String avatar_url;
-    private String login_provider;
-    private String provider_id;
+    @Column(name = "login_provider")
+    private String loginProvider;
+    @Column(name = "provider_id")
+    private String providerId;
     private String role;
     private String subscription_type;
     private Date created_at;
     private Date updated_at;
+    private boolean enabled;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role));

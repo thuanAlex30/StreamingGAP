@@ -5,6 +5,8 @@ import com.fpt.StreamGAP.dto.UserDTO;
 import com.fpt.StreamGAP.entity.User;
 import com.fpt.StreamGAP.repository.UserRepo;
 import com.fpt.StreamGAP.service.UserManagementService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -94,5 +96,31 @@ public class UserManagementController {
         return ResponseEntity.ok(userManagementService.deleteUser(userId));
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/auth/login/google")
+    public ReqRes loginWithGoogle(@RequestBody Map<String, String> requestBody, HttpServletResponse response, HttpServletRequest request) {
+        String idToken = requestBody.get("idToken");
+
+        if (idToken == null || idToken.isEmpty()) {
+            ReqRes errorResponse = new ReqRes();
+            errorResponse.setStatusCode(400);
+            errorResponse.setMessage("Vui lòng cung cấp id token để tiếp tục.");
+            return errorResponse;
+        }
+
+        try {
+            // Đăng nhập qua Google
+            ReqRes loginResponse = userManagementService.loginWithOAuth2(idToken, "google", request, response);
+            return loginResponse;
+
+        } catch (Exception e) {
+            System.out.println("Lỗi khi đăng nhập với Google: " + e.getMessage());
+
+            ReqRes errorResponse = new ReqRes();
+            errorResponse.setStatusCode(500);
+            errorResponse.setMessage("Đăng nhập thất bại. Vui lòng thử lại.");
+            return errorResponse;
+        }
+    }
 
 }
