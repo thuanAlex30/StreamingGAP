@@ -30,6 +30,17 @@ public class KaraokeSessionController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/song/{songId}")
+    public ResponseEntity<KaraokeSessionDTO> getKaraokeSession(@PathVariable int songId) {
+        KaraokeSessionDTO karaokeSession = karaokeSessionService.getKaraokeSessionBySongId(songId);
+        if (karaokeSession == null) {
+            // Trả về 404 nếu không tìm thấy karaoke session
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        return ResponseEntity.ok(karaokeSession);
+    }
+
+
     @PostMapping
     public ResponseEntity<ReqRes> createKaraokeSession(@RequestBody KaraokeSessionDTO karaokeSessionDTO) {
         KaraokeSessionDTO createdSession = karaokeSessionService.createKaraokeSession(karaokeSessionDTO);

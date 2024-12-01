@@ -102,6 +102,19 @@ public class CommentService {
         return false; // Comment không tồn tại hoặc không thuộc về người dùng
     }
 
+    public List<CommentDTO> getCommentsBySongId(Integer songId) {
+        Optional<Song> songOptional = songRepository.findById(songId);
+
+        if (songOptional.isPresent()) {
+            List<Comment> comments = commentRepository.findBySong_SongId(songId);
+            return comments.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+
+        return List.of(); // Trả về danh sách rỗng nếu không tìm thấy bài hát
+    }
+
     public Optional<CommentDTO> getCommentById(Integer commentId) {
         Optional<Comment> comment = commentRepository.findById(commentId);
         if (comment.isPresent() && comment.get().getUser().getUsername().equals(getCurrentUsername())) {
@@ -114,6 +127,7 @@ public class CommentService {
         CommentDTO dto = new CommentDTO();
         dto.setCommentId(comment.getComment_id());
         dto.setUserId(comment.getUser().getUser_id());
+        dto.setUsername(comment.getUser().getUsername());
         dto.setSongId(comment.getSong().getSongId());
         dto.setContent(comment.getContent());
         dto.setCreatedAt(comment.getCreatedAt());

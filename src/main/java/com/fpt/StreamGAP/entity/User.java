@@ -30,6 +30,14 @@ public class User implements UserDetails {
     private String subscription_type;
     private Date created_at;
     private Date updated_at;
+
+    @ManyToOne
+    @JoinColumn(name = "subscription_id")
+    private Subscription subscription;
+
+    private Date subscriptionExpirationDate;
+
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role));

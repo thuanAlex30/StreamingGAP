@@ -52,12 +52,6 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/account-settings/**").hasAuthority("USER")
 
 
-                                .requestMatchers("/albums/**").hasAnyAuthority("ADMIN", "USER")
-                                .requestMatchers(HttpMethod.POST, "/albums/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/albums/**").hasAnyAuthority("ADMIN", "USER")
-                                .requestMatchers(HttpMethod.PUT, "/albums/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/albums/**").hasAuthority("ADMIN")
-
 
                                 .requestMatchers("/artists/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/artists/**").hasAuthority("ADMIN")
@@ -94,6 +88,12 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/musicgames/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/musicgames/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/musicgames/**").hasAuthority("ADMIN")
+
+                                .requestMatchers("/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.POST, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.GET, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.PUT, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.DELETE, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
 
                                 .requestMatchers("/karaoke-sessions/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/karaoke-sessions/**").hasAuthority("USER")

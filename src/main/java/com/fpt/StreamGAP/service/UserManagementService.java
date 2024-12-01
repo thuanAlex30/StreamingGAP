@@ -30,7 +30,7 @@ public class UserManagementService {
 
     public String register(ReqRes registrationRequest) {
         try {
-            if(userRepo.existsByEmail(registrationRequest.getEmail())){
+            if (userRepo.existsByEmail(registrationRequest.getEmail())) {
                 return "mail da su dung";
             }
 
@@ -42,9 +42,11 @@ public class UserManagementService {
             user.setUsername(registrationRequest.getUsername());
             user.setProvider_id(registrationRequest.getProvider_id());
             user.setLogin_provider(registrationRequest.getLogin_provider());
-            user.setSubscription_type(registrationRequest.getSubscription_type());
-            user.setCreated_at(registrationRequest.getCreated_at());
-            user.setUpdated_at(registrationRequest.getUpdated_at());
+            user.setCreated_at(new Date()); // Hoặc lấy giá trị từ registrationRequest nếu cần
+            user.setUpdated_at(new Date());
+
+            // Tạo người dùng
+            userRepo.save(user);
 
             String verificationCode = generateVerificationCode();
             pendingRegistrations.put(verificationCode, user);
@@ -55,6 +57,7 @@ public class UserManagementService {
             return "khong dang ki duoc: " + e.getMessage();
         }
     }
+    
 
     private String generateVerificationCode() {
         Random random = new Random();
@@ -203,6 +206,14 @@ public class UserManagementService {
         return userRepo.findByUsername(username)
                 .map(User::getUser_id);
     }
+    public User getUserById(Integer userId) {
+        return userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public void saveUser(User user) {
+        userRepo.save(user);
+    }
 
     public Optional<User> getUsersByIdC(Integer id) {
         return userRepo.findById(id);
@@ -214,5 +225,7 @@ public class UserManagementService {
     public Optional<User> getUserByUsername(String username) {
         return userRepo.findByUsername(username);
     }
+
+
 
 }

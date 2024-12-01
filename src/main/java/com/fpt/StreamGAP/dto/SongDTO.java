@@ -16,5 +16,6 @@ public class SongDTO {
     private String lyrics;
     private Date created_at;
     private Integer listen_count;
+    private String recording_Url;
 }
 
