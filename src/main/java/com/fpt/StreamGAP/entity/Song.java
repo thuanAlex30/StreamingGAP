@@ -23,7 +23,6 @@ public class Song {
     @Lob
     @Column(name = "lyrics", columnDefinition = "TEXT")
     private String lyrics;
-
     private Date created_at;
     private Integer Listen_count=0;
     @Column(name = "created_by_username")

@@ -1,26 +1,36 @@
 package com.fpt.StreamGAP.entity;
 
+import com.fpt.StreamGAP.Status.Status;
 import jakarta.persistence.*;
-import lombok.Data;
-
-import java.util.Date;
-
+import lombok.Getter;
+import lombok.Setter;
+@Getter
+@Setter
 @Entity
-@Data
+@Table(name = "message")
 public class Message {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    private String content;
+    @Column(name = "sender_name")
+    private String senderName;
 
-    @ManyToOne
-    @JoinColumn(name = "chat_channel_id")
-    private ChatChannel chatChannel;
+    @Column(name = "receiver_name")
+    private String receiverName;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User sentBy;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date sentAt;
+    @Column(name = "content")
+    private String message;
+
+    @Column(name = "media")
+    private String media;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Status status;
+
+    @Column(name = "media_type")
+    private String mediaType;
+
 }

@@ -37,8 +37,7 @@ public class ReqRes {
     private List<Song> songList;
     private List<SongDTO> songDtoList;
     private Integer albumId;
-    private List<AccountSettingsDTO> accountSettingsList;
-    private List<FavoriteSongDTO.PlaylistSongDTO> playlistSongList;
+ List<FavoriteSongDTO.PlaylistSongDTO> playlistSongList;
     private List<PartySongDTO> partySongList;
     private List<PartyModeDTO> partyModeList;
     private List<MusicGameDTO> musicGameList;
@@ -47,8 +46,6 @@ public class ReqRes {
     private List<AlbumsDTO> albumList;
     private List<CommentDTO> commentList;
     private List<PlaylistDTO> playList;
-    private List<ChatChannelDTO> chatChannel;
-    private List<ChatMessageDTO> chatMessageList;
     private List<ArtistDTO> artistList;
     private List<SongListenStatsDTO> songListenStatsList;
     private List<MessageDTO> messages;//

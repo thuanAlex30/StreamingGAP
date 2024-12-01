@@ -18,7 +18,7 @@ public class ChatMessageService {
         return chatMessageRepository.findAll();
     }
 
-    public Optional<ChatMessage> getChatMessageById(Integer id) {
+    public Optional<ChatMessage> getChatMessageById(Long id) {
         return chatMessageRepository.findById(id);
     }
 
@@ -26,7 +26,7 @@ public class ChatMessageService {
         return chatMessageRepository.save(chatMessage);
     }
 
-    public void deleteChatMessage(Integer id) {
+    public void deleteChatMessage(Long id) {
         chatMessageRepository.deleteById(id);
     }
 }

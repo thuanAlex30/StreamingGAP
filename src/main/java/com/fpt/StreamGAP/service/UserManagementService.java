@@ -1,14 +1,23 @@
 package com.fpt.StreamGAP.service;
 
 
+import com.fpt.StreamGAP.dto.GoogleUserDTO;
 import com.fpt.StreamGAP.dto.ReqRes;
 import com.fpt.StreamGAP.entity.User;
 import com.fpt.StreamGAP.repository.UserRepo;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -30,7 +39,7 @@ public class UserManagementService {
 
     public String register(ReqRes registrationRequest) {
         try {
-            if (userRepo.existsByEmail(registrationRequest.getEmail())) {
+            if(userRepo.existsByEmail(registrationRequest.getEmail())){
                 return "mail da su dung";
             }
 
@@ -40,13 +49,11 @@ public class UserManagementService {
             user.setRole(registrationRequest.getRole());
             user.setAvatar_url(registrationRequest.getAvatar_url());
             user.setUsername(registrationRequest.getUsername());
-            user.setProvider_id(registrationRequest.getProvider_id());
-            user.setLogin_provider(registrationRequest.getLogin_provider());
-            user.setCreated_at(new Date()); // Hoặc lấy giá trị từ registrationRequest nếu cần
-            user.setUpdated_at(new Date());
-
-            // Tạo người dùng
-            userRepo.save(user);
+            user.setProviderId(registrationRequest.getProvider_id());
+            user.setLoginProvider(registrationRequest.getLogin_provider());
+            user.setSubscription_type(registrationRequest.getSubscription_type());
+            user.setCreated_at(registrationRequest.getCreated_at());
+            user.setUpdated_at(registrationRequest.getUpdated_at());
 
             String verificationCode = generateVerificationCode();
             pendingRegistrations.put(verificationCode, user);
@@ -57,7 +64,6 @@ public class UserManagementService {
             return "khong dang ki duoc: " + e.getMessage();
         }
     }
-    
 
     private String generateVerificationCode() {
         Random random = new Random();
@@ -225,7 +231,117 @@ public class UserManagementService {
     public Optional<User> getUserByUsername(String username) {
         return userRepo.findByUsername(username);
     }
+    public User findByUsernameOrThrow(String username) {
+        // Tìm kiếm user bằng username
+        Optional<User> user = userRepo.findByUsername(username);
+
+        // Kiểm tra nếu user tồn tại, nếu không thì ném ra một ngoại lệ
+        return user.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
 
 
+    public ReqRes loginWithOAuth2(String idToken, String provider, HttpServletRequest request, HttpServletResponse response) {
+        clearSessionAndCookies(request, response);
 
+        User user;
+        try {
+            user = fetchUserFromProvider(idToken,  provider);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching user from provider: " + provider + " - " + e.getMessage());
+        }
+
+        Optional<User> userOpt = userRepo.findByLoginProviderAndProviderId(user.getLoginProvider(), user.getProviderId());
+        if (userOpt.isPresent()) {
+            User existingUser = userOpt.get();
+            updateUserInfo(existingUser, user);
+            return generateLoginResponse(existingUser, provider);
+        } else {
+            userRepo.save(user);
+            return generateLoginResponse(user, provider);
+        }
+    }
+
+    private User fetchUserFromProvider(String idToken, String provider) {
+        String url;
+        Class<?> responseType;
+
+        if ("google".equals(provider)) {
+            url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+            responseType = GoogleUserDTO.class;
+        }  else {
+            throw new IllegalArgumentException("Unsupported provider: " + provider);
+        }
+
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            ResponseEntity<?> response = restTemplate.getForEntity(url, responseType);
+            if (responseType == GoogleUserDTO.class) {
+                return convertToUser((GoogleUserDTO) response.getBody(), provider);
+            } else {
+                throw new RuntimeException("Unknown provider type.");
+            }
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("Error fetching user from " + provider + ": " + e.getMessage());
+        }
+    }
+
+    private User convertToUser(GoogleUserDTO googleUserDTO, String provider) {
+        User user = new User();
+        user.setEmail(googleUserDTO.getEmail());
+        user.setUsername(googleUserDTO.getEmail());
+        user.setAvatar_url(googleUserDTO.getPicture());
+        user.setLoginProvider(provider);
+        user.setProviderId(googleUserDTO.getSub());
+        setDefaultUserAttributes(user);
+        return user;
+    }
+
+    private void setDefaultUserAttributes(User user) {
+        user.setEnabled(true);
+        user.setCreated_at(new Date());
+        user.setUpdated_at(new Date());
+        user.setRole("USER");
+    }
+
+    private ReqRes generateLoginResponse(User user, String provider) {
+        var jwtAccessToken = jwtUtils.generateToken(user);
+        var jwtRefreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
+
+        System.out.println("Đăng nhập thành công với " + provider + " cho người dùng: " + user.getUsername());
+
+        ReqRes response = new ReqRes();
+        response.setStatusCode(200);
+        response.setToken(jwtAccessToken);
+        response.setRefreshToken(jwtRefreshToken);
+        response.setRole(user.getRole());
+        response.setUsername(user.getUsername());
+        response.setEmail(user.getEmail());
+        response.setMessage("Đăng nhập thành công với " + user.getLoginProvider());
+        return response;
+    }
+
+    private void updateUserInfo(User existingUser, User newUser) {
+        existingUser.setEmail(newUser.getEmail());
+        existingUser.setAvatar_url(newUser.getAvatar_url());
+        existingUser.setUsername(newUser.getUsername());
+        existingUser.setUpdated_at(new Date());
+        userRepo.save(existingUser);
+    }
+
+    private void clearSessionAndCookies(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                cookie.setValue("");
+                cookie.setMaxAge(0);
+                cookie.setPath("/");
+                response.addCookie(cookie);
+            }
+        }
+
+    }
 }

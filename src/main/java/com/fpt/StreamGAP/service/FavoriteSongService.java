@@ -87,9 +87,6 @@ public class FavoriteSongService {
         }
     }
 
-
-
-
     public void deleteFavoriteSong(int userId, int songId) {
         FavoriteSongId favoriteSongId = new FavoriteSongId(userId, songId);
         if (favoriteSongRepository.existsById(favoriteSongId)) {

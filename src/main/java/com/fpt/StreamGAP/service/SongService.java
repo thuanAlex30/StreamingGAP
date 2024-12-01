@@ -103,6 +103,13 @@ public class SongService {
             if (currentUsername == null) {
                 throw new RuntimeException("Người dùng không xác thực");
             }
+
+            if (song.getAlbum() != null) {
+                Album album = albumRepository.findById(song.getAlbum().getAlbumId())
+                        .orElseThrow(() -> new RuntimeException("Album không tồn tại"));
+                song.setAlbum(album);
+            }
+
             song.setCreatedByUsername(currentUsername);
             song.setCreated_at(new Date());
 
@@ -115,11 +122,14 @@ public class SongService {
     @Transactional
     public Song updateSong(Integer songId, SongDTO songDetails) {
         try {
+
             Song existingSong = getSongByIdForCurrentUser(songId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Song not found"));
+
             if (!isAdmin() && !existingSong.getCreatedByUsername().equals(getCurrentUsername())) {
                 throw new RuntimeException("Bạn không có quyền cập nhật bài hát này");
             }
+
             if (songDetails.getTitle() != null) {
                 existingSong.setTitle(songDetails.getTitle());
             }
@@ -135,6 +145,7 @@ public class SongService {
             if (songDetails.getLyrics() != null) {
                 existingSong.setLyrics(songDetails.getLyrics());
             }
+
             if (songDetails.getAlbum() != null) {
                 Album album = albumRepository.findById(songDetails.getAlbum().getAlbumId())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Album not found"));
@@ -148,32 +159,38 @@ public class SongService {
     }
 
 
-
     public void deleteSong(Integer songId) {
         try {
             Song existingSong = songRepository.findById(songId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Song not found"));
-            if (isAdmin() || existingSong.getCreatedByUsername().equals(getCurrentUsername())) {
+            String currentUsername = getCurrentUsername();
+            if (currentUsername == null) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            }
 
+            if (isAdmin() || existingSong.getCreatedByUsername().equals(currentUsername)) {
                 List<SongListenStats> listenStats = songListenStatsRepository.findBySong(existingSong);
                 if (!listenStats.isEmpty()) {
                     songListenStatsRepository.deleteAll(listenStats);
                 }
+
                 songRepository.delete(existingSong);
             } else {
-                throw new RuntimeException("Bạn không có quyền xóa bài hát này");
+
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to delete this song");
             }
         } catch (Exception e) {
             throw new RuntimeException("Error deleting song: " + e.getMessage(), e);
         }
     }
+
+
     public List<SongTitleDTO> searchSongs(String keyword) {
         try {
             if (keyword == null || keyword.trim().isEmpty()) {
                 return List.of();
             }
             List<Song> songs = songRepository.findByTitleContainingIgnoreCaseOrGenreContainingIgnoreCase(keyword);
-            // Map Song objects to SongTitleDTO
             return songs.stream()
                     .map(song -> new SongTitleDTO(song.getTitle()))
                     .collect(Collectors.toList());
@@ -182,7 +199,7 @@ public class SongService {
         }
     }
     public Song findById(int songId) {
-        return songRepository.findById(songId).orElse(null); // Tìm bài hát theo ID
+        return songRepository.findById(songId).orElse(null);
     }
     private SongDetailDTO convertToSongDetailDTO(Song song) {
         SongDetailDTO dto = new SongDetailDTO();
@@ -197,7 +214,7 @@ public class SongService {
     public SongDetailDTO getSongDetail(int songId) {
         Song song = findById(songId);
         if (song == null) {
-            return null; // Hoặc ném ngoại lệ nếu cần
+            return null;
         }
         return convertToSongDetailDTO(song);
     }

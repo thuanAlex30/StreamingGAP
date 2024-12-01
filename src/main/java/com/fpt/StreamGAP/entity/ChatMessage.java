@@ -1,26 +1,40 @@
 package com.fpt.StreamGAP.entity;
 
+import com.fpt.StreamGAP.Status.Status;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.sql.Date;
+import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "Chat_Messages")
 @Data
+@NoArgsConstructor
+@Entity
 public class ChatMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer message_id;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "channel_id", nullable = false)
-    private ChatChannel channel;
+    private String senderName;
+    private String receiverName;
+    private String message;
+    private String media;
+    private String mediaType;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-    private String content;
-    private Date created_at;
+    @Column(nullable = false)
+    private Long timestamp;
+
+    // Constructors
+    public ChatMessage(String senderName, String receiverName, String message, String media, String mediaType, Status status, Long timestamp) {
+        this.senderName = senderName;
+        this.receiverName = receiverName;
+        this.message = message;
+        this.media = media;
+        this.mediaType = mediaType;
+        this.status = status;
+        this.timestamp = timestamp;
+    }
 }
+
