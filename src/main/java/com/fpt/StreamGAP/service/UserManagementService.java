@@ -344,4 +344,54 @@ public class UserManagementService {
         }
 
     }
+    public ReqRes updateProfile(String username, User updatedUser) {
+        ReqRes reqRes = new ReqRes();
+        try {
+            // Lấy người dùng hiện tại từ repository
+            Optional<User> userOptional = userRepo.findByUsername(username);
+            
+            // Kiểm tra xem người dùng có tồn tại không
+            if (userOptional.isPresent()) {
+                User existingUser = userOptional.get();
+                
+                // Cập nhật các trường thông tin mà người dùng có thể thay đổi
+                if (updatedUser.getEmail() != null && !updatedUser.getEmail().isEmpty()) {
+                    existingUser.setEmail(updatedUser.getEmail());
+                }
+                
+                if (updatedUser.getUsername() != null && !updatedUser.getUsername().isEmpty()) {
+                    existingUser.setUsername(updatedUser.getUsername());
+                }
+    
+                if (updatedUser.getAvatar_url() != null && !updatedUser.getAvatar_url().isEmpty()) {
+                    existingUser.setAvatar_url(updatedUser.getAvatar_url());
+                }
+    
+                // Nếu người dùng có thay đổi mật khẩu, cập nhật mật khẩu mới
+                if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                  if(!updatedUser.getPassword().startsWith("$2a$")){
+                    existingUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
+                  }else{
+                    existingUser.setPassword(updatedUser.getPassword());
+                }
+            }
+    
+                // Lưu lại thông tin đã được cập nhật
+                User savedUser = userRepo.save(existingUser);
+                
+                // Trả về thông tin cập nhật thành công
+                reqRes.setUser(savedUser);
+                reqRes.setStatusCode(200);
+                reqRes.setMessage("Profile updated successfully");
+            } else {
+                reqRes.setStatusCode(404);
+                reqRes.setMessage("User not found for update");
+            }
+        } catch (Exception e) {
+            reqRes.setStatusCode(500);
+            reqRes.setMessage("Error occurred while updating profile: " + e.getMessage());
+        }
+        return reqRes;
+    }
+
 }
