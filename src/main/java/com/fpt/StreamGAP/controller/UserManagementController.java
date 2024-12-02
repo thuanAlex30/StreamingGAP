@@ -96,7 +96,7 @@ public class UserManagementController {
         return ResponseEntity.ok(userManagementService.deleteUser(userId));
     }
 
-    @CrossOrigin(origins = "http://localhost:3000")
+    @CrossOrigin(origins = "https://streaminggap-fontend.onrender.com")
     @PostMapping("/auth/login/google")
     public ReqRes loginWithGoogle(@RequestBody Map<String, String> requestBody, HttpServletResponse response, HttpServletRequest request) {
         String idToken = requestBody.get("idToken");
