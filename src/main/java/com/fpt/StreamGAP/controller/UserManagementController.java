@@ -122,5 +122,16 @@ public class UserManagementController {
             return errorResponse;
         }
     }
-
+@PutMapping("user/updateProfile")
+    public ResponseEntity<ReqRes> updateProfile(@AuthenticationPrincipal User currentUser, @RequestBody User reqres) {
+      ReqRes response =userManagementService.updateProfile(currentUser.getUsername(), reqres);
+      return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+    @GetMapping("/user/get-profile")
+    public ResponseEntity<ReqRes> getMyProfile(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        ReqRes response = userManagementService.getMyInfo(email);
+        return  ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }
