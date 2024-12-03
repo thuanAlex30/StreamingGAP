@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/ws/**")
-                .allowedOrigins("http://localhost:3000")
+                .allowedOrigins("https://streaminggap-fontend.onrender.com")
                 .allowedMethods("*")
                 .allowCredentials(true);
     }

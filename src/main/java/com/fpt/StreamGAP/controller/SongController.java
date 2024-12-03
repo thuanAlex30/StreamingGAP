@@ -3,6 +3,9 @@ package com.fpt.StreamGAP.controller;
 
 import com.fpt.StreamGAP.dto.*;
 import com.fpt.StreamGAP.entity.Song;
+import com.fpt.StreamGAP.entity.SongListenStats;
+import com.fpt.StreamGAP.repository.SongListenStatsRepository;
+import com.fpt.StreamGAP.repository.SongRepository;
 import com.fpt.StreamGAP.service.SongListenStatsService;
 import com.fpt.StreamGAP.service.SongService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +25,10 @@ public class SongController {
 
     @Autowired
     private SongListenStatsService songListenStatsService;
-
+    @Autowired
+    private SongRepository songRepository;
+    @Autowired
+    private SongListenStatsRepository songListenStatsRepository ;
     @GetMapping
     public ReqRes getAllSongs() {
         List<Song> songs = songService.getAllSongsForCurrentUser();
@@ -55,10 +61,28 @@ public class SongController {
 
     @GetMapping("/{songId}")
     public ResponseEntity<SongDetailDTO> getSongDetail(@PathVariable int songId) {
-        SongDetailDTO songDetail = songService.getSongDetail(songId);
-        if (songDetail == null) {
+        Song song = songRepository.findById(songId).orElse(null);
+
+        if (song == null) {
             return ResponseEntity.notFound().build();
         }
+        song.setListen_count(song.getListen_count() + 1);
+        songRepository.save(song);
+        List<SongListenStats> statsList = songListenStatsRepository.findBySong(song);
+        SongListenStats stats;
+
+        if (statsList.isEmpty()) {
+            stats = new SongListenStats();
+            stats.setSong(song);
+            stats.setListen_count(1);
+        } else {
+            stats = statsList.get(0);
+            stats.setListen_count(stats.getListen_count() + 1);
+        }
+        songListenStatsRepository.save(stats);
+        SongDetailDTO songDetail = convertToSongDetailDTO(song);
+        songDetail.setListen_count(song.getListen_count());
+
         return ResponseEntity.ok(songDetail);
     }
 
@@ -127,24 +151,30 @@ public class SongController {
 //    @GetMapping("/search")
 //    public ResponseEntity<ReqRes> searchSongs(@RequestParam String keyword) {
 //        List<SongTitleDTO> songTitles = songService.searchSongs(keyword);
-//
 //        ReqRes response = new ReqRes();
 //        response.setStatusCode(HttpStatus.OK.value());
 //        response.setMessage("Search successful");
-//        response.setSongDtoList(songTitles);;
-//
+//        response.setSongListtt(songTitles);
 //        return ResponseEntity.ok(response);
 //    }
+private SongDetailDTO convertToSongDetailDTO(Song song) {
+    SongDetailDTO dto = new SongDetailDTO();
+    dto.setSongId(song.getSongId());
+    dto.setTitle(song.getTitle());
+    dto.setGenre(song.getGenre());
+    dto.setDuration(song.getDuration());
+    dto.setAudioFileUrl(song.getAudio_file_url());
+    dto.setLyrics(song.getLyrics());
 
-    private SongDetailDTO convertToSongDetailDTO(Song song) {
-        SongDetailDTO dto = new SongDetailDTO();
-        dto.setSongId(song.getSongId());
-        dto.setTitle(song.getTitle());
-        dto.setGenre(song.getGenre());
-        dto.setDuration(song.getDuration());
-        dto.setAudioFileUrl(song.getAudio_file_url());
-        dto.setLyrics(song.getLyrics());
-        return dto;
+    if (song.getAlbum() != null) {
+        AlbumsDTO albumDTO = new AlbumsDTO();
+        albumDTO.setAlbum_id(song.getAlbum().getAlbumId());
+        albumDTO.setTitle(song.getAlbum().getTitle());
+        albumDTO.setArtist(song.getAlbum().getArtist());
+        dto.setAlbum(albumDTO);
     }
+
+    return dto;
+}
 
 }

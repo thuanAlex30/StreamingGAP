@@ -13,5 +13,6 @@ public class SongDetailDTO {
     private String lyrics;
     private AlbumsDTO album; // Giả định AlbumDTO đã được tạo
     private String imgUrl;
+    private Integer listen_count;
     // Getters and Setters
 }

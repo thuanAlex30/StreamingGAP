@@ -23,6 +23,6 @@ public class KaraokeSession {
     @JoinColumn(name = "song_id", nullable = false)
     private Song song;
 
-    private String recording_url;
+    private String recordingUrl;
     private Date created_at;
 }

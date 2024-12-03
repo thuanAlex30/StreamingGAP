@@ -8,6 +8,7 @@ import lombok.Getter;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -36,8 +37,7 @@ public class ReqRes {
     private List<Song> songList;
     private List<SongDTO> songDtoList;
     private Integer albumId;
-    private List<AccountSettingsDTO> accountSettingsList;
-    private List<FavoriteSongDTO.PlaylistSongDTO> playlistSongList;
+ List<FavoriteSongDTO.PlaylistSongDTO> playlistSongList;
     private List<PartySongDTO> partySongList;
     private List<PartyModeDTO> partyModeList;
     private List<MusicGameDTO> musicGameList;
@@ -49,6 +49,8 @@ public class ReqRes {
     private List<ArtistDTO> artistList;
     private List<SongListenStatsDTO> songListenStatsList;
     private List<MessageDTO> messages;//
+    private List<SongTitleDTO> songListtt;
+    private List<Map<String, String>> videoList;
 
     @Getter
     private Song song;

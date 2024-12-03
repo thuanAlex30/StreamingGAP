@@ -58,6 +58,18 @@ public class KaraokeSessionService {
         }
     }
 
+    public KaraokeSessionDTO getKaraokeSessionBySongId(int songId) {
+        Optional<KaraokeSession> karaokeSession = karaokeSessionRepository.findBySong_SongId(songId);
+        if (karaokeSession.isPresent()) {
+            // Chuyển đối tượng KaraokeSession thành KaraokeSessionDTO (nếu cần)
+            return new KaraokeSessionDTO(karaokeSession.get().getRecordingUrl());
+        } else {
+            // Trả về null hoặc thông báo lỗi tùy thuộc vào yêu cầu
+            return null;  // Có thể tùy chỉnh thông báo lỗi tại đây
+        }
+    }
+
+
 
     public KaraokeSessionDTO createKaraokeSession(KaraokeSessionDTO karaokeSessionDTO) {
         User user = userRepository.findByUsername(getCurrentUsername()).orElse(null);
@@ -70,7 +82,7 @@ public class KaraokeSessionService {
         KaraokeSession karaokeSession = new KaraokeSession();
         karaokeSession.setUser(user);
         karaokeSession.setSong(song);
-        karaokeSession.setRecording_url(karaokeSessionDTO.getRecordingUrl());
+        karaokeSession.setRecordingUrl(karaokeSessionDTO.getRecordingUrl());
         karaokeSession.setCreated_at(new Date(System.currentTimeMillis()));
 
         KaraokeSession savedSession = karaokeSessionRepository.save(karaokeSession);
@@ -84,7 +96,7 @@ public class KaraokeSessionService {
             if (!session.getUser().getUsername().equals(getCurrentUsername())) {
                 return null; // Người dùng không sở hữu phiên karaoke này
             }
-            session.setRecording_url(karaokeSessionDTO.getRecordingUrl());
+            session.setRecordingUrl(karaokeSessionDTO.getRecordingUrl());
             session.setCreated_at(new Date(System.currentTimeMillis()));
             session = karaokeSessionRepository.save(session);
             return convertToDTO(session);
@@ -114,7 +126,7 @@ public class KaraokeSessionService {
         dto.setSessionId(session.getSession_id());
         dto.setUserId(session.getUser().getUser_id());
         dto.setSongId(session.getSong().getSongId());
-        dto.setRecordingUrl(session.getRecording_url());
+        dto.setRecordingUrl(session.getRecordingUrl());
         dto.setCreatedAt(session.getCreated_at());
         return dto;
     }

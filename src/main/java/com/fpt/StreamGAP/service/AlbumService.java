@@ -120,6 +120,7 @@ public class AlbumService {
     }
 
 
+
     public void deleteAlbumsForCurrentUser(Integer id) {
         if (isAdmin()) {
             albumRepository.deleteById(id);

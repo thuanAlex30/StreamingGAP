@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Integer> {
     List<Comment> findByUser_Username(String username);
+    List<Comment> findBySong_SongId(Integer songId);
 }
 

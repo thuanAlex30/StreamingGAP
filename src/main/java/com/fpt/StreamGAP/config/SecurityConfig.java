@@ -24,13 +24,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired
     private userDetailsService UserDetailsService;
-
     @Autowired
     private JWTAuthFilter jwtAuthFilter;
 
@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/songs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
+
                                 .requestMatchers("/account-settings/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/account-settings/**").hasAuthority("USER")
                                 .requestMatchers(HttpMethod.GET, "/account-settings/").hasAnyAuthority("ADMIN", "USER")
@@ -61,46 +62,66 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/artists/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/artists/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/artists/**").hasAuthority("ADMIN")
+
                                 .requestMatchers("/playlists/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/playlists/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/playlists/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/playlists/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/playlists/**").hasAuthority("ADMIN")
+
+
                                 .requestMatchers("/playlistsongs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/playlistsongs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/playlistsongs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/playlistsongs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/playlistsongs/**").hasAuthority("ADMIN")
+
                                 .requestMatchers("/partysongs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/partysongs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/partysongs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/partysongs/**").hasAuthority("ADMIN")
+
                                 .requestMatchers("/partymodes/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/partymodes/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/partymodes/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/partymodes/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/partymodes/**").hasAuthority("ADMIN")
+
                                 .requestMatchers("/musicgames/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/musicgames/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/musicgames/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/musicgames/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/musicgames/**").hasAuthority("ADMIN")
+
+                                .requestMatchers("/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.POST, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.GET, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.PUT, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.DELETE, "/youtube/**").hasAnyAuthority("ADMIN", "USER")
+
                                 .requestMatchers("/karaoke-sessions/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/karaoke-sessions/**").hasAuthority("USER")
                                 .requestMatchers(HttpMethod.GET, "/karaoke-sessions/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/karaoke-sessions/**").hasAuthority("USER")
                                 .requestMatchers(HttpMethod.DELETE, "/karaoke-sessions/**").hasAuthority("ADMIN")
+
                                 .requestMatchers("/favorite-songs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/favorite-songs/**").hasAuthority("USER")
                                 .requestMatchers(HttpMethod.GET, "/favorite-songs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.DELETE, "/favorite-songs/**").hasAuthority("ADMIN")
+
+
                                 .requestMatchers("/songsStats/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/songsStats/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/songsStats/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.PUT, "/songsStats/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/songsStats/**").hasAuthority("ADMIN")
+
+
                                 .requestMatchers("/comments/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.DELETE, "/comments/**").hasAuthority("ADMIN")
+
+
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                                 .requestMatchers("/user/**").hasAuthority("USER")
                                 .requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN", "USER")
@@ -113,8 +134,9 @@ public class SecurityConfig {
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
         return httpSecurity.build();
+
+
     }
 
     @Bean
@@ -138,7 +160,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("https://streaminggap-fontend.onrender.com"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));

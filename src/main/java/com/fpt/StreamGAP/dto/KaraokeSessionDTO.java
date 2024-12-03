@@ -11,4 +11,13 @@ public class KaraokeSessionDTO {
     private Integer songId;
     private String recordingUrl;
     private Date createdAt;
+
+    // Constructor mặc định
+    public KaraokeSessionDTO() {
+    }
+
+    // Constructor chấp nhận tham số kiểu String
+    public KaraokeSessionDTO(String recordingUrl) {
+        this.recordingUrl = recordingUrl;
+    }
 }

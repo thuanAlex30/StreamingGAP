@@ -28,6 +28,24 @@ public class CommentController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/song/{songId}")
+    public ResponseEntity<ReqRes> getCommentsBySongId(@PathVariable Integer songId) {
+        List<CommentDTO> comments = commentService.getCommentsBySongId(songId);
+        ReqRes response = new ReqRes();
+
+        if (comments.isEmpty()) {
+            response.setStatusCode(HttpStatus.NOT_FOUND.value());
+            response.setMessage("No comments found for the given song ID.");
+        } else {
+            response.setStatusCode(HttpStatus.OK.value());
+            response.setMessage("Comments retrieved successfully.");
+        }
+
+        response.setCommentList(comments);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
 
     @PostMapping
     public ResponseEntity<ReqRes> createComment(@RequestBody CommentDTO commentDTO) {

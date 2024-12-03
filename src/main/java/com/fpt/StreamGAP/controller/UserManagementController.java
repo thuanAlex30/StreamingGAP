@@ -5,11 +5,15 @@ import com.fpt.StreamGAP.dto.UserDTO;
 import com.fpt.StreamGAP.entity.User;
 import com.fpt.StreamGAP.repository.UserRepo;
 import com.fpt.StreamGAP.service.UserManagementService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -97,13 +101,13 @@ public class UserManagementController {
     public ResponseEntity<ReqRes> updateUser(@PathVariable Integer userId, @RequestBody User reqres) {
         return ResponseEntity.ok(userManagementService.updateUser(userId, reqres));
     }
-    @GetMapping("/admin/user/get-profile")
-    public ResponseEntity<ReqRes> getMyProfile(){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        ReqRes response = userManagementService.getMyInfo(email);
-        return  ResponseEntity.status(response.getStatusCode()).body(response);
-    }
+    // @GetMapping("/admin/user/get-profile")
+    // public ResponseEntity<ReqRes> getMyProfile(){
+    //     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    //     String email = authentication.getName();
+    //     ReqRes response = userManagementService.getMyInfo(email);
+    //     return  ResponseEntity.status(response.getStatusCode()).body(response);
+    // }
 
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<ReqRes> deleteUSer(@PathVariable Integer userId){
@@ -129,5 +133,43 @@ public class UserManagementController {
         }
     }
 
+    @CrossOrigin(origins = "https://streaminggap-fontend.onrender.com")
+    @PostMapping("/auth/login/google")
+    public ReqRes loginWithGoogle(@RequestBody Map<String, String> requestBody, HttpServletResponse response, HttpServletRequest request) {
+        String idToken = requestBody.get("idToken");
 
+        if (idToken == null || idToken.isEmpty()) {
+            ReqRes errorResponse = new ReqRes();
+            errorResponse.setStatusCode(400);
+            errorResponse.setMessage("Vui lòng cung cấp id token để tiếp tục.");
+            return errorResponse;
+        }
+
+        try {
+            // Đăng nhập qua Google
+            ReqRes loginResponse = userManagementService.loginWithOAuth2(idToken, "google", request, response);
+            return loginResponse;
+
+        } catch (Exception e) {
+            System.out.println("Lỗi khi đăng nhập với Google: " + e.getMessage());
+
+            ReqRes errorResponse = new ReqRes();
+            errorResponse.setStatusCode(500);
+            errorResponse.setMessage("Đăng nhập thất bại. Vui lòng thử lại.");
+            return errorResponse;
+        }
+    }
+@PutMapping("user/updateProfile")
+    public ResponseEntity<ReqRes> updateProfile(@AuthenticationPrincipal User currentUser, @RequestBody User reqres) {
+      ReqRes response =userManagementService.updateProfile(currentUser.getUsername(), reqres);
+      return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+    @GetMapping("/user/get-profile")
+    public ResponseEntity<ReqRes> getMyProfile(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        ReqRes response = userManagementService.getMyInfo(email);
+        return  ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+      
 }
