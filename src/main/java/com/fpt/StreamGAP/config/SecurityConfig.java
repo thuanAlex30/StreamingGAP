@@ -46,7 +46,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
         // Quyền cho USER (chỉ GET, ví dụ)
         .requestMatchers(HttpMethod.GET, "/songs/**").hasAnyAuthority("USER", "ADMIN")
-
+   .requestMatchers(HttpMethod.GET, "/subscription/**").hasAnyAuthority( "USER")
                                 .requestMatchers("/account-settings/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/account-settings/**").hasAuthority("USER")
                                 .requestMatchers(HttpMethod.GET, "/account-settings/").hasAnyAuthority("ADMIN", "USER")
