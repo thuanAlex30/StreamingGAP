@@ -41,11 +41,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request ->
                         request
                                  .requestMatchers("/auth/**", "/public/**").permitAll()
-                                .requestMatchers("/songs/**").hasAnyAuthority("ADMIN", "USER")
+                               .requestMatchers("/songs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/songs/**").hasAuthority("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/songs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/songs/**").hasAnyAuthority("ADMIN", "USER")
 
                                 .requestMatchers("/account-settings/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/account-settings/**").hasAuthority("USER")
