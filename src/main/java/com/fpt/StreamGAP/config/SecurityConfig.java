@@ -45,7 +45,7 @@ public class SecurityConfig {
 
                                 .requestMatchers("/songs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/songs/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("USER")
                                 .requestMatchers(HttpMethod.PUT, "/songs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
 
