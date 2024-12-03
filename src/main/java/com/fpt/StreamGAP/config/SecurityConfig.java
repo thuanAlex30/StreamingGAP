@@ -41,11 +41,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request ->
                         request
                                 .requestMatchers("/auth/**", "/public/**", "/ws/**","/vnpay-payment").permitAll() // Cho phép truy cập các đường dẫn này mà không cần xác thực
-                                .requestMatchers("/songs/**").hasAnyAuthority("ADMIN", "USER")
-                                .requestMatchers(HttpMethod.POST, "/songs/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.PUT, "/songs/**").hasAuthority("ADMIN")
-                                .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
+                                 .requestMatchers(HttpMethod.POST, "/songs/**").hasAuthority("ADMIN")
+        .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN")
+        .requestMatchers(HttpMethod.PUT, "/songs/**").hasAuthority("ADMIN")
+        .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
+        // Quyền cho USER (chỉ GET, ví dụ)
+        .requestMatchers(HttpMethod.GET, "/songs/**").hasAnyAuthority("USER", "ADMIN")
 
                                 .requestMatchers("/account-settings/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/account-settings/**").hasAuthority("USER")
