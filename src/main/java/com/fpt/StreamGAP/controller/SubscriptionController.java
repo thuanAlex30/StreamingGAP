@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,12 +69,31 @@ public class SubscriptionController {
             user.setSubscriptionExpirationDate(calendar.getTime());
 
             userManagementService.saveUser(user);
-            return ResponseEntity.ok("Your account has been upgraded to Premium. It will expire in 1 month.");
+            return ResponseEntity.ok("Your account has been upgraded to Premium. It will expire in 10 seconds.");
         }
 
         return ResponseEntity.status(400).body("Invalid subscription status.");
     }
 
+    @GetMapping("/isPremium")
+    public ResponseEntity<Boolean> isUserPremium() {
+        // Lấy thông tin người dùng hiện tại
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Optional<User> optionalUser = userManagementService.getUserByUsername(userDetails.getUsername());
 
+        // Kiểm tra người dùng có tồn tại không
+        if (!optionalUser.isPresent()) {
+            return ResponseEntity.status(404).body(false);
+        }
+
+        User user = optionalUser.get();
+
+        // Kiểm tra người dùng có gói đăng ký Premium không và gói đăng ký có hết hạn không
+        boolean isPremium = user.getSubscription() != null &&
+                "Premium".equals(user.getSubscription().getName()) &&
+                !subscriptionService.isPremiumExpired(user);
+
+        return ResponseEntity.ok(isPremium);
+    }
 
 }
