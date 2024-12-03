@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request ->
                         request
-                                .requestMatchers("/auth/**", "/public/**", "/ws/**").permitAll() // Cho phép truy cập các đường dẫn này mà không cần xác thực
+                                .requestMatchers("/auth/**", "/public/**", "/ws/**","/vnpay-payment").permitAll() // Cho phép truy cập các đường dẫn này mà không cần xác thực
                                 .requestMatchers("/songs/**").hasAnyAuthority("ADMIN", "USER")
                                 .requestMatchers(HttpMethod.POST, "/songs/**").hasAuthority("ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN")
@@ -104,6 +104,10 @@ public class SecurityConfig {
                                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
                                 .requestMatchers("/user/**").hasAuthority("USER")
                                 .requestMatchers("/adminuser/**").hasAnyAuthority("ADMIN", "USER")
+//pay
+                                .requestMatchers("/submitOrder/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.POST, "/submitOrder/**").hasAnyAuthority("ADMIN", "USER")
+                                .requestMatchers(HttpMethod.GET, "/vnpay-payment/**").hasAnyAuthority("ADMIN", "USER")
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

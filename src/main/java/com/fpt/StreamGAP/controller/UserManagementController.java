@@ -5,7 +5,9 @@ import com.fpt.StreamGAP.dto.UserDTO;
 import com.fpt.StreamGAP.entity.User;
 import com.fpt.StreamGAP.repository.UserRepo;
 import com.fpt.StreamGAP.service.UserManagementService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,16 +29,30 @@ public class UserManagementController {
     private UserRepo userRepo;
 
     @PostMapping("/auth/register")
-    public ResponseEntity<String> registerUser(@RequestBody ReqRes userDto){
-        String response = userManagementService.register(userDto);
+    public ResponseEntity<String> registerUser(@RequestBody ReqRes userDto, HttpSession session) {
+        String response = userManagementService.register(userDto, session);
+
+        // Kiểm tra nếu response chứa thông báo lỗi
+        if (response.equals("Email đã được sử dụng.")) {
+            // Trả về mã lỗi 400 và thông báo lỗi nếu email đã được sử dụng
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
+        // Trả về thông báo thành công nếu đăng ký thành công
         return ResponseEntity.ok(response);
     }
+
     @PostMapping("/auth/verify")
-    public ResponseEntity<String> verify(@RequestBody Map<String , String> request){
+    public ResponseEntity<String> verify(@RequestBody Map<String , String> request,  HttpSession session){
         String email = request.get("email");
         String code = request.get("code");
-        String responseMessage =userManagementService.verifyEmail(email,code);
-        return ResponseEntity.ok(responseMessage);
+        String responseMessage =userManagementService.verifyEmail(email,code, session);
+        // Kiểm tra kết quả xác minh và trả về mã trạng thái 200
+        if (responseMessage.equals("Đăng ký thành công.")) {
+            return ResponseEntity.ok("200");
+        }
+        // Trường hợp xác minh thất bại, trả về mã lỗi (ví dụ: 400)
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Verification failed. Please check the code and try again.");
     }
 
 
@@ -92,6 +108,25 @@ public class UserManagementController {
     @DeleteMapping("/admin/delete/{userId}")
     public ResponseEntity<ReqRes> deleteUSer(@PathVariable Integer userId){
         return ResponseEntity.ok(userManagementService.deleteUser(userId));
+    }
+    // forgot password
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String response = userManagementService.initiatePasswordReset(email);
+        return ResponseEntity.ok(response);
+    }
+    // reset password
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> request) {
+        String code = request.get("code");
+        String newPassword = request.get("newPassword");
+        try {
+            String response = userManagementService.resetPassword(code, newPassword);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 

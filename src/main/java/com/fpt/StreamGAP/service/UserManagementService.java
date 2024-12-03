@@ -2,15 +2,20 @@ package com.fpt.StreamGAP.service;
 
 
 import com.fpt.StreamGAP.dto.ReqRes;
+import com.fpt.StreamGAP.entity.Enum.CodeTypeEnum;
 import com.fpt.StreamGAP.entity.User;
+import com.fpt.StreamGAP.entity.VerifyCode;
 import com.fpt.StreamGAP.repository.UserRepo;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -26,53 +31,93 @@ public class UserManagementService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private VerifyCodeService verifyCodeService;
 
-    private Map<String, User> pendingRegistrations = new HashMap<>();
+    public String register(ReqRes registrationRequest, HttpSession session) {
+        if (userRepo.existsByEmail(registrationRequest.getEmail())) {
+            return "Email đã được sử dụng.";
+        }
 
-    public String register(ReqRes registrationRequest) {
         try {
-            if(userRepo.existsByEmail(registrationRequest.getEmail())){
-                return "mail da su dung";
-            }
-
             User user = new User();
             user.setEmail(registrationRequest.getEmail());
             user.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
             user.setRole(registrationRequest.getRole());
-            user.setAvatar_url(registrationRequest.getAvatar_url());
             user.setUsername(registrationRequest.getUsername());
-            user.setProvider_id(registrationRequest.getProvider_id());
-            user.setLogin_provider(registrationRequest.getLogin_provider());
-            user.setSubscription_type(registrationRequest.getSubscription_type());
-            user.setCreated_at(registrationRequest.getCreated_at());
-            user.setUpdated_at(registrationRequest.getUpdated_at());
+            session.setAttribute("registeredUser", user);
+            session.setAttribute("registrationTime", LocalDateTime.now().plusMinutes(5));
 
-            String verificationCode = generateVerificationCode();
-            pendingRegistrations.put(verificationCode, user);
-            emailService.sendVerificationEmail(user.getEmail(), "Email Verification", verificationCode);
+            String verificationCode = generateVerificationCode(CodeTypeEnum.REGISTER, null);
+            emailService.sendVerificationEmail(user.getEmail(), "Xác nhận email", verificationCode);
 
-            return "check code";
+            return "Vui lòng kiểm tra email để xác nhận.";
         } catch (Exception e) {
-            return "khong dang ki duoc: " + e.getMessage();
+            return "Không thể đăng ký: " + e.getMessage();
         }
     }
 
-    private String generateVerificationCode() {
-        Random random = new Random();
-        int code = 100000 + random.nextInt(900000);
-        return String.valueOf(code);
+    private String generateVerificationCode(CodeTypeEnum codeTypeEnum, User user) {
+        String codeStr = null;
+        int attempts = 0; // Thêm biến đếm số lần thử
+        while (attempts < 5) { // Giới hạn số lần thử
+            Random random = new Random();
+            int code = 100000 + random.nextInt(900000);
+            VerifyCode verifyCode = new VerifyCode();
+            verifyCode.setCode(String.valueOf(code));
+            verifyCode.setUser(user);
+            verifyCode.setCodeType(codeTypeEnum);
+            try {
+                verifyCodeService.save(verifyCode);
+                codeStr = String.valueOf(code);
+                break;
+            } catch (DataIntegrityViolationException e) {
+                attempts++;
+            }
+        }
+        if (codeStr == null) {
+            throw new IllegalStateException("Không thể tạo mã xác thực. Vui lòng thử lại.");
+        }
+        return codeStr;
+    }
+    private boolean isCodeValid(String code, CodeTypeEnum type) {
+        VerifyCode verifyCode = verifyCodeService.findByCode(code);
+        if (verifyCode == null || verifyCode.getCodeType() != type) {
+            return false;
+        }
+        if (LocalDateTime.now().isAfter(verifyCode.getExpireAt())) {
+            verifyCodeService.deleteByCode(code); // Xóa mã hết hạn
+            return false;
+        }
+        return true;
     }
 
-    public String verifyEmail(String email, String code) {
-        User user = pendingRegistrations.get(code);
-        if (user != null && user.getEmail().equals(email)) {
-            User savedUser = userRepo.save(user);
-            pendingRegistrations.remove(code);
-            return "ddang ki thanh cong";
-        } else {
-            return "khong dang ki thanh cong";
+
+    public String verifyEmail(String email, String code, HttpSession session) {
+        User registeredUser = (User) session.getAttribute("registeredUser");
+        LocalDateTime registrationTime = (LocalDateTime) session.getAttribute("registrationTime");
+
+        VerifyCode findedCode = verifyCodeService.findByCode(code);
+
+        if (findedCode == null) {
+            return "Mã xác nhận không hợp lệ.";
         }
+
+        if (registeredUser == null || LocalDateTime.now().isAfter(registrationTime) || LocalDateTime.now().isAfter(findedCode.getExpireAt())) {
+            verifyCodeService.deleteByCode(code);
+            return "Phiên đăng ký đã hết hạn.";
+        }
+
+        if (registeredUser.getEmail().equals(email)) {
+            registeredUser.setRole("USER");
+            userRepo.save(registeredUser);
+            verifyCodeService.deleteByCode(code);
+            return "Đăng ký thành công.";
+        }
+
+        return "Xác nhận không thành công.";
     }
+
     public ReqRes  login(ReqRes loginRequest){
         ReqRes response = new ReqRes();
         try {
@@ -222,5 +267,35 @@ public class UserManagementService {
         // Kiểm tra nếu user tồn tại, nếu không thì ném ra một ngoại lệ
         return user.orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
     }
+    //forgot password
+    public String initiatePasswordReset(String email) {
+        Optional<User> userOptional = userRepo.findByEmail(email);
 
+        if (userOptional.isEmpty()) {
+            return "Email không tồn tại.";
+        }
+
+        String resetCode = generateVerificationCode(CodeTypeEnum.FORGET_PASS, userOptional.get());
+        emailService.sendVerificationEmail(email, "Đặt lại mật khẩu", resetCode);
+
+        return "Vui lòng kiểm tra email để lấy mã xác nhận.";
+    }
+    //reset password
+    public String resetPassword(String code, String newPassword) {
+        if (!isCodeValid(code, CodeTypeEnum.FORGET_PASS)) {
+            throw new IllegalArgumentException("Mã không hợp lệ hoặc đã hết hạn.");
+        }
+
+        User user = verifyCodeService.findByCode(code).getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepo.save(user);
+        verifyCodeService.deleteByCode(code);
+        return "Mật khẩu đã được đặt lại thành công.";
+    }
+
+
+    public User saveUser(User user) {
+        User save = userRepo.save(user);
+        return save;
+    }
 }

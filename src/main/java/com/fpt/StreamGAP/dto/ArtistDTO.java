@@ -11,6 +11,7 @@ import java.sql.Date;
 public class ArtistDTO {
     private Integer artist_id;
     private String name;
-    private String country;
-    private Date debut_date;
+    private String bio;
+    private Date created_at;
+    private String profile_image_url;
 }

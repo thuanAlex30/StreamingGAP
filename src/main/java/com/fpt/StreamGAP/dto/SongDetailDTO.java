@@ -12,6 +12,6 @@ public class SongDetailDTO {
     private String audioFileUrl;
     private String lyrics;
     private AlbumsDTO album; // Giả định AlbumDTO đã được tạo
-
+    private String imgUrl;
     // Getters and Setters
 }

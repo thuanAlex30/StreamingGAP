@@ -20,9 +20,12 @@ public class Song {
     private String genre;
     private Integer duration;
     private String audio_file_url;
+    @Column(columnDefinition = "TEXT")
     private String lyrics;
     private Date created_at;
     private Integer Listen_count=0;
     @Column(name = "created_by_username")
     private String createdByUsername;
+    @Column(name = "img_url")
+    private String imgUrl;
 }

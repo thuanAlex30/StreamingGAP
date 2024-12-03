@@ -2,6 +2,8 @@ package com.fpt.StreamGAP.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -22,5 +24,6 @@ public class Album {
     private String title;
     private Date release_date;
     private String cover_image_url;
+    private Long price;
     private Date created_at;
 }

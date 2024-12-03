@@ -21,5 +21,5 @@ public class AlbumsDTO {
     private Date release_date;
     private String cover_image_url;
     private Date created_at;
-
+    private Long price;
 }

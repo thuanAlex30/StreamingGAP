@@ -189,6 +189,7 @@ public class SongService {
         dto.setDuration(song.getDuration());
         dto.setAudioFileUrl(song.getAudio_file_url());
         dto.setLyrics(song.getLyrics());
+        dto.setImgUrl(song.getImgUrl());
         return dto;
     }
     public SongDetailDTO getSongDetail(int songId) {

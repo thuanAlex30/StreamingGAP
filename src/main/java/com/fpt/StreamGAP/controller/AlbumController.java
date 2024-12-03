@@ -3,11 +3,15 @@ package com.fpt.StreamGAP.controller;
 import com.fpt.StreamGAP.dto.AlbumsDTO;
 import com.fpt.StreamGAP.dto.ReqRes;
 import com.fpt.StreamGAP.entity.Album;
-import com.fpt.StreamGAP.entity.Playlist;
+import com.fpt.StreamGAP.entity.Artist;
+import com.fpt.StreamGAP.entity.User;
+import com.fpt.StreamGAP.repository.ArtistRepository;
+import com.fpt.StreamGAP.repository.UserRepo;
 import com.fpt.StreamGAP.service.AlbumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -20,9 +24,14 @@ public class AlbumController {
     @Autowired
     private AlbumService albumService;
 
+    @Autowired
+    private UserRepo userRepo;
+
+    @Autowired
+    private ArtistRepository artistRepository;
     @GetMapping
-    public ReqRes getAllAlbumsForCurrentUser() {
-        List<Album> albums = albumService.getAllPlaylistsForCurrentUser();
+    public ReqRes getAllAlbum() {
+        List<Album> albums = albumService.getAllAlbum();
 
         List<AlbumsDTO> albumsDTOS = albums.stream()
                 .map(album -> {
@@ -33,7 +42,7 @@ public class AlbumController {
                     dto.setCover_image_url(album.getCover_image_url());
                     dto.setRelease_date(album.getRelease_date());
                     dto.setCreated_at(album.getCreated_at());
-
+                    dto.setPrice(album.getPrice());
                     return dto;
                 })
                 .toList();
@@ -44,7 +53,6 @@ public class AlbumController {
         response.setAlbumList(albumsDTOS);
         return response;
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<ReqRes> getAlbumsByIdForCurrentUser(@PathVariable Integer id) {
         return albumService.getPlaylistsByIdForCurrentUser(id)
@@ -56,6 +64,7 @@ public class AlbumController {
                     dto.setCover_image_url(album.getCover_image_url());
                     dto.setRelease_date(album.getRelease_date());
                     dto.setCreated_at(album.getCreated_at());
+                    dto.setPrice(album.getPrice());
 
                     ReqRes response = new ReqRes();
                     response.setStatusCode(200);
@@ -70,21 +79,27 @@ public class AlbumController {
                     return ResponseEntity.status(404).body(response);
                 });
     }
-
     @PostMapping
     public ResponseEntity<ReqRes> createAlbum(@RequestBody Album album) {
         ReqRes response = new ReqRes();
         try {
+            // Example for Spring Security (if you are using it)
+            String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+            User user = userRepo.findByUsername(currentUsername)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            album.setUser(user); // Set the user in the album
 
             album.setCreated_at(new Date());
             Album savedAlbum = albumService.saveAlbums(album);
+
+            // Set response with saved album data
             AlbumsDTO dto = new AlbumsDTO();
-            dto.setAlbum_id(savedAlbum.getAlbumId());
             dto.setArtist(savedAlbum.getArtist());
             dto.setTitle(savedAlbum.getTitle());
             dto.setCover_image_url(savedAlbum.getCover_image_url());
             dto.setRelease_date(savedAlbum.getRelease_date());
             dto.setCreated_at(savedAlbum.getCreated_at());
+            dto.setPrice(savedAlbum.getPrice());
 
             response.setStatusCode(201);
             response.setMessage("Album created successfully");
@@ -97,15 +112,17 @@ public class AlbumController {
         }
     }
 
+
+
+
     @PutMapping("/{id}")
     public ResponseEntity<ReqRes> updateAlbum(@PathVariable Integer id, @RequestBody Album album) {
         return albumService.getPlaylistsByIdForCurrentUser(id)
                 .map(existingAlbum -> {
                     album.setAlbumId(id);
-
                     album.setCreated_at(new Date());
-
                     Album updatedAlbum = albumService.saveAlbums(album);
+
                     AlbumsDTO dto = new AlbumsDTO();
                     dto.setAlbum_id(updatedAlbum.getAlbumId());
                     dto.setTitle(updatedAlbum.getTitle());
@@ -113,6 +130,7 @@ public class AlbumController {
                     dto.setCover_image_url(updatedAlbum.getCover_image_url());
                     dto.setRelease_date(updatedAlbum.getRelease_date());
                     dto.setCreated_at(updatedAlbum.getCreated_at());
+                    dto.setPrice(updatedAlbum.getPrice());
 
                     ReqRes response = new ReqRes();
                     response.setStatusCode(200);
@@ -127,7 +145,6 @@ public class AlbumController {
                     return ResponseEntity.status(404).body(response);
                 });
     }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<ReqRes> deleteAlbumsForCurrentUser(@PathVariable Integer id) {
         ReqRes response = new ReqRes();
@@ -143,5 +160,3 @@ public class AlbumController {
         }
     }
 }
-
-

@@ -40,7 +40,7 @@ public class SongController {
 
                     StatisticsDTO stats = songListenStatsService.getStatsBySongId(song.getSongId());
                     dto.setListen_count(stats != null ? stats.getCount() : 0);
-
+                    dto.setImgUrl(song.getImgUrl());
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -71,6 +71,7 @@ public class SongController {
         song.setAudio_file_url(songDTO.getAudio_file_url());
         song.setLyrics(songDTO.getLyrics());
         song.setAlbum(songDTO.getAlbum());
+        song.setImgUrl(songDTO.getImgUrl());
 
         Song savedSong = songService.createSong(song);
         SongDTO dto = new SongDTO();
@@ -82,6 +83,7 @@ public class SongController {
         dto.setAudio_file_url(savedSong.getAudio_file_url());
         dto.setLyrics(savedSong.getLyrics());
         dto.setCreated_at(savedSong.getCreated_at());
+        dto.setImgUrl(savedSong.getImgUrl());
 
         ReqRes response = new ReqRes();
         response.setStatusCode(201);

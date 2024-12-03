@@ -1,5 +1,6 @@
 package com.fpt.StreamGAP.service;
 
+import com.fpt.StreamGAP.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,6 +31,19 @@ public class JWTUtils {
                 .signWith(Key)
                 .compact();
     }
+    //
+    public String generateVerificationToken(User user) {
+        return Jwts.builder()
+                .setSubject(user.getEmail()) // Email làm đối tượng chính (Subject)
+                .claim("username", user.getUsername()) // Thêm thông tin username
+                .claim("role", user.getRole()) // Thêm thông tin role
+                .setIssuedAt(new Date()) // Ngày tạo token
+                .setExpiration(new Date(System.currentTimeMillis() + 300000)) // Token hết hạn sau 5 phút
+                .signWith(Key) // Ký token với SecretKey
+                .compact(); // Trả về token đã mã hóa
+    }
+
+
     public  String generateRefreshToken(HashMap<String, Object> claims, UserDetails userDetails){
         return Jwts.builder()
                 .claims(claims)
