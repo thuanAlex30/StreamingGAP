@@ -42,7 +42,6 @@ public class SecurityConfig {
                         request
                                 .requestMatchers("/auth/**", "/public/**", "/ws/**","/vnpay-payment").permitAll() // Cho phép truy cập các đường dẫn này mà không cần xác thực
                                  .requestMatchers(HttpMethod.POST, "/songs/**").hasAuthority("ADMIN")
-        .requestMatchers(HttpMethod.GET, "/songs/**").hasAuthority("ADMIN")
         .requestMatchers(HttpMethod.PUT, "/songs/**").hasAuthority("ADMIN")
         .requestMatchers(HttpMethod.DELETE, "/songs/**").hasAuthority("ADMIN")
         // Quyền cho USER (chỉ GET, ví dụ)
